@@ -136,7 +136,12 @@ public class PriceCompositeIntegration {
             default : price = null;
                 break;
         }
-        Price result = new Price.PriceBuilder().withFlightId(flightid).withValue(price).build();
+        Price result;
+        if (!price.equals(null)) {
+            result = new Price.PriceBuilder().withFlightId(flightid).withValue(price).build();
+        } else {
+            result = null;
+        }
         return result;
     }
 

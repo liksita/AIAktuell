@@ -58,6 +58,9 @@ public class PriceCompositeController {
 //            priceCompositeIntegration.createPrice()
 //                    return priceCompositeIntegration
 //            core service anschauen
+            if (price.equals(null)) {
+                return utils.createResponse(null,priceResult.getStatusCode());
+            }
             return utils.createOkResponse(new CalculatedPrice(price));
         }
         return utils.createOkResponse(new CalculatedPrice(priceResult.getBody()));
