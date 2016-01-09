@@ -1,5 +1,6 @@
 package de.hawhamburg.microservices.composite.price.service;
 
+import de.hawhamburg.microservices.composite.price.model.Flight;
 import de.hawhamburg.microservices.composite.price.model.Price;
 import de.hawhamburg.microservices.composite.price.util.ResponseHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,5 +97,87 @@ public class PriceCompositeIntegration {
 
     public ResponseEntity<Price> defaultProduct(UUID flightId) {
         return utils.createResponse(null, HttpStatus.BAD_GATEWAY);
+    }
+
+
+    public Flight getFlightFromFlightOp(UUID flightid){
+        //OF TODO use this later
+        URI uri = utils.getServiceUrl("flightOp");
+        String url = uri.toString() + "/api/flight/" + flightid;
+        ResponseEntity<Flight> resultStr = restTemplate.getForEntity(url, Flight.class);
+        Flight flight = resultStr.getBody();
+        return flight;
+    }
+
+    public UUID getFlightDepartureFromFlightOp(UUID flightid){
+        Flight flight = getFlightFromFlightOp(flightid);
+        UUID departure = flight.getBlueprint().getDeparture();
+        return departure;
+    }
+
+    public UUID getFlightDestinationFromFlightOp(UUID flightid){
+        Flight flight = getFlightFromFlightOp(flightid);
+        UUID destination = flight.getBlueprint().getDestination();
+        return destination;
+    }
+
+    public Price calculatePriceForFlight(UUID flightid) {
+        Double price = null;
+        UUID deperture = getFlightDepartureFromFlightOp(flightid);
+        UUID destination = getFlightDestinationFromFlightOp(flightid);
+        String dep = deperture.toString();
+        switch(dep) {
+            case "08388730-b705-11e5-a837-0800200c9a66" : price = flightFromHamburg(destination);
+                break;
+            case "a00dd206-e496-4a6d-905d-db4ec2c5efef" : price = flightFromBerlin(destination);
+                break;
+            case "4a9ec8b0-19de-4eb7-b75c-dc16df57e8e3" : price = flightFromBremen(destination);
+                break;
+            default : price = null;
+                break;
+        }
+        Price result = new Price.PriceBuilder().withFlightId(flightid).withValue(price).build();
+        return result;
+    }
+
+    private Double flightFromHamburg(UUID destination) {
+        Double price = null;
+        String dest = destination.toString();
+        switch(dest) {
+            case "a00dd206-e496-4a6d-905d-db4ec2c5efef" : price = 100.0;
+                break;
+            case "4a9ec8b0-19de-4eb7-b75c-dc16df57e8e3" : price = 80.0;
+                break;
+            default : price = null;
+        }
+        return price;
+    }
+
+    private Double flightFromBerlin(UUID destination) {
+        Double price = null;
+        String dest = destination.toString();
+        switch(dest) {
+            case "08388730-b705-11e5-a837-0800200c9a66" : price = 100.0;
+                break;
+            case "4a9ec8b0-19de-4eb7-b75c-dc16df57e8e3" : price = 70.0;
+                break;
+            default : price = null;
+                break;
+        }
+        return price;
+    }
+
+    private Double flightFromBremen(UUID destination) {
+        String dest = destination.toString();
+        Double price;
+        switch(dest) {
+            case "08388730-b705-11e5-a837-0800200c9a66" : price = 80.0;
+                break;
+            case "a00dd206-e496-4a6d-905d-db4ec2c5efef" : price = 70.0;
+                break;
+            default : price = null;
+                break;
+        }
+        return price;
     }
 }
